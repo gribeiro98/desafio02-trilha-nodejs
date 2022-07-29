@@ -28,7 +28,27 @@ function checksCreateTodosUserAvailability(request, response, next) {
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  if (!validate(id)) {
+    return response.status(400).json({ error: 'Id not uiidv4 valid' });
+  }
+
+  const user = users.some((user) => user.username === username);
+  const todo = user.todos.find((todo) => todo.id === id);
+
+  if (!user) {
+    return response.status(400).json({ error: 'User not exists' });
+  }
+
+  if (!todo) {
+    return response.status(400).json({ error: 'Todo not exists' });
+  }
+
+  request.todo = todo;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
