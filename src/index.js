@@ -24,7 +24,15 @@ function checksExistsUserAccount(request, response, next) {
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  const countTodos = user.todos.length;
+
+  if(((user.pro === false) && countTodos < 10) || (user.pro === true)) {
+    return next();
+  }
+
+  return response.status(403).json({ error: 'You must be Pro to create new todos' });
 }
 
 function checksTodoExists(request, response, next) {
@@ -35,17 +43,19 @@ function checksTodoExists(request, response, next) {
     return response.status(400).json({ error: 'Id not uiidv4 valid' });
   }
 
-  const user = users.some((user) => user.username === username);
-  const todo = user.todos.find((todo) => todo.id === id);
+  const user = users.find((user) => user.username === username);
 
   if (!user) {
-    return response.status(400).json({ error: 'User not exists' });
+    return response.status(404).json({ error: 'User not exists' });
   }
+
+  const todo = user.todos.find((todo) => todo.id === id);
 
   if (!todo) {
-    return response.status(400).json({ error: 'Todo not exists' });
+    return response.status(404).json({ error: 'Todo not exists' });
   }
 
+  request.user = user;
   request.todo = todo;
 
   return next();
